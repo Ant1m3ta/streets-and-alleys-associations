@@ -71,7 +71,11 @@ function applyShuffle(state: GameState): GameState {
     idx += row.left.cards.length;
     const right = all.slice(idx, idx + row.right.cards.length);
     idx += row.right.cards.length;
-    return { ...row, left: { cards: left }, right: { cards: right } };
+    return {
+      ...row,
+      left: { cards: left, position: 0 },
+      right: { cards: right, position: 0 },
+    };
   });
   return {
     ...state,
@@ -88,9 +92,10 @@ function applyCycle(state: GameState, rowIdx: number, side: StackSide): GameStat
     throw new Error('Nothing to cycle');
   }
   const [top, ...rest] = stack.cards;
+  const cycled = [...rest, top];
   const newRow: Row = {
     ...row,
-    [side]: { cards: [...rest, top] },
+    [side]: { cards: cycled, position: (stack.position + 1) % cycled.length },
   };
   return {
     ...state,
@@ -119,7 +124,7 @@ function applyDropToFoundation(
 
   const newSourceRow: Row = {
     ...sourceRow,
-    [fromSide]: { cards: sourceStack.cards.slice(1) },
+    [fromSide]: { cards: sourceStack.cards.slice(1), position: 0 },
   };
   const rowsAfterPull = state.rows.map((r, i) =>
     i === fromRowIdx ? newSourceRow : r,

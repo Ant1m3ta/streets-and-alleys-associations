@@ -48,6 +48,7 @@ export function Foundation({
       {slot.displayedCard ? (
         <CardView
           card={slot.displayedCard}
+          inFoundation
           counter={
             slot.lockedCategory
               ? { current: slot.cardsConsumed, total: totalForCategory }

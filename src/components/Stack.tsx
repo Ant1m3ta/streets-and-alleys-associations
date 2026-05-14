@@ -64,6 +64,11 @@ export function Stack({ stack, rowIdx, side, disabled, dispatch }: Props) {
           <div className="stack-empty-slot" />
         </div>
       )}
+      {stack.cards.length > 0 && (
+        <span className="stack-counter">
+          {stack.position + 1}/{stack.cards.length}
+        </span>
+      )}
     </div>
   );
 }

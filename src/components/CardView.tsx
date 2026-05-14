@@ -8,6 +8,7 @@ interface Props {
   isDragging?: boolean;
   isDropTarget?: boolean;
   counter?: { current: number; total: number };
+  inFoundation?: boolean;
   className?: string;
   style?: CSSProperties;
   onPointerDown?: (e: PointerEvent<HTMLDivElement>) => void;
@@ -21,11 +22,13 @@ export function CardView({
   isDragging,
   isDropTarget,
   counter,
+  inFoundation,
   className = '',
   style,
   onPointerDown,
   children,
 }: Props) {
+  const isLockedSimple = !!card && !card.isCategory && !!inFoundation;
   const classes = [
     'card',
     card?.isCategory ? 'category' : '',
@@ -33,6 +36,7 @@ export function CardView({
     draggable ? 'draggable' : '',
     isDragging ? 'dragging' : '',
     isDropTarget ? 'drop-target' : '',
+    isLockedSimple ? 'locked-simple' : '',
     className,
   ]
     .filter(Boolean)
@@ -55,6 +59,9 @@ export function CardView({
         <span className="card-counter">
           {counter.current}/{counter.total}
         </span>
+      )}
+      {isLockedSimple && (
+        <span className="card-category-label">{card!.category}</span>
       )}
       {children}
     </div>

@@ -5,8 +5,14 @@ export function buildInitialState(level: LevelData): GameState {
   resetUidForLevel();
 
   const rows: Row[] = level.rows.map((rowData) => ({
-    left: { cards: rowData.left.map((id) => createCardFromId(level, id)) },
-    right: { cards: rowData.right.map((id) => createCardFromId(level, id)) },
+    left: {
+      cards: rowData.left.map((id) => createCardFromId(level, id)),
+      position: 0,
+    },
+    right: {
+      cards: rowData.right.map((id) => createCardFromId(level, id)),
+      position: 0,
+    },
     foundation: { lockedCategory: null, displayedCard: null, cardsConsumed: 0 },
   }));
 

@@ -12,8 +12,11 @@ export type StackSide = 'left' | 'right';
 
 // Index 0 = top (the exposed, interactive card). Last index = deepest.
 // Cycling shifts index 0 to the end.
+// `position` is a 0-indexed cycle counter: incremented mod cards.length on
+// CYCLE_STACK, reset to 0 when a card leaves the stack (drop) or on shuffle.
 export interface Stack {
   cards: Card[];
+  position: number;
 }
 
 export interface CategorySlot {
