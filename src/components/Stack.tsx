@@ -39,6 +39,7 @@ export function Stack({ stack, rowIdx, side, disabled, dispatch }: Props) {
 
   const buriedDepth = Math.min(stack.cards.length - 1, VISIBLE_DEPTH - 1);
   const direction = side === 'left' ? -1 : 1;
+  const isLocked = stack.cards.some((c) => c.isPileCard);
 
   const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
     if (disabled || !top) return;
@@ -52,7 +53,12 @@ export function Stack({ stack, rowIdx, side, disabled, dispatch }: Props) {
     );
   };
 
-  const stackClasses = ['stack', `stack-${side}`, isHovered ? 'drop-target' : '']
+  const stackClasses = [
+    'stack',
+    `stack-${side}`,
+    isHovered ? 'drop-target' : '',
+    isLocked ? 'locked' : '',
+  ]
     .filter(Boolean)
     .join(' ');
 

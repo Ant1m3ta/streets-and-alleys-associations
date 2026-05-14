@@ -38,27 +38,61 @@ export function applyAction(state: GameState, action: Action): GameState {
   if (!hasMovesLeft(state)) {
     throw new Error('No moves left');
   }
+  let next: GameState;
   switch (action.type) {
     case 'CYCLE_STACK':
-      return applyCycle(state, action.rowIdx, action.side);
+      next = applyCycle(state, action.rowIdx, action.side);
+      break;
     case 'DROP_TO_FOUNDATION':
-      return applyDropToFoundation(
+      next = applyDropToFoundation(
         state,
         action.fromRowIdx,
         action.fromSide,
         action.toRowIdx,
       );
+      break;
     case 'MOVE_TO_STACK':
-      return applyMoveToStack(
+      next = applyMoveToStack(
         state,
         action.fromRowIdx,
         action.fromSide,
         action.toRowIdx,
         action.toSide,
       );
+      break;
     case 'SHUFFLE':
-      return applyShuffle(state);
+      next = applyShuffle(state);
+      break;
   }
+  return autoRefill(next);
+}
+
+// Fills every empty row stack with cards from the top of the reserve, up to
+// that stack's cap. Free of move cost; runs as a side effect after every
+// action.
+function autoRefill(state: GameState): GameState {
+  if (state.reserve.length === 0) return state;
+  let reserve = state.reserve;
+  let mutated = false;
+  const newRows = state.rows.map((row) => {
+    let newRow = row;
+    for (const side of ['left', 'right'] as const) {
+      const stack = newRow[side];
+      if (stack.cards.length === 0 && reserve.length > 0) {
+        const pullCount = Math.min(stack.cap, reserve.length);
+        const refilled = reserve.slice(0, pullCount);
+        reserve = reserve.slice(pullCount);
+        newRow = {
+          ...newRow,
+          [side]: { ...stack, cards: refilled, position: 0 },
+        };
+        mutated = true;
+      }
+    }
+    return newRow;
+  });
+  if (!mutated) return state;
+  return { ...state, rows: newRows, reserve };
 }
 
 const MIN_CARDS_PER_STACK_ON_SHUFFLE = 3;
@@ -70,6 +104,11 @@ function applyShuffle(state: GameState): GameState {
   }
   if (all.length < 2) {
     throw new Error('Nothing to shuffle');
+  }
+  for (let i = 0; i < all.length; i++) {
+    if (all[i].isPileCard) {
+      all[i] = { ...all[i], isPileCard: undefined };
+    }
   }
   for (let i = all.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -104,7 +143,6 @@ function applyShuffle(state: GameState): GameState {
       remaining--;
     }
   } else {
-    // Not enough cards to give even a single stack the minimum — dump all into one.
     sizes[chosenSlots[0]] = all.length;
   }
 
@@ -118,10 +156,11 @@ function applyShuffle(state: GameState): GameState {
     idx += rightCount;
     return {
       ...row,
-      left: { cards: left, position: 0 },
-      right: { cards: right, position: 0 },
+      left: { ...row.left, cards: left, position: 0 },
+      right: { ...row.right, cards: right, position: 0 },
     };
   });
+
   return {
     ...state,
     rows: newRows,
@@ -135,6 +174,9 @@ function applyCycle(state: GameState, rowIdx: number, side: StackSide): GameStat
   const stack = row[side];
   if (stack.cards.length < 2) {
     throw new Error('Nothing to cycle');
+  }
+  if (stack.cards.some((c) => c.isPileCard)) {
+    throw new Error('Stack is locked');
   }
   let prefixLen = 0;
   while (prefixLen < stack.cards.length && stack.cards[prefixLen].isRevealed) {
@@ -150,6 +192,7 @@ function applyCycle(state: GameState, rowIdx: number, side: StackSide): GameStat
   const newRow: Row = {
     ...row,
     [side]: {
+      ...stack,
       cards: cycled,
       position: (stack.position + cycleCount) % cycled.length,
     },
@@ -185,25 +228,79 @@ function applyMoveToStack(
     throw new Error('Categories do not match');
   }
 
-  const newSourceCards = sourceStack.cards.slice(1);
-  const revealedMoving = { ...movingCard, isRevealed: true };
-  const newTargetCards = targetTop
-    ? [revealedMoving, { ...targetTop, isRevealed: true }, ...targetStack.cards.slice(1)]
-    : [revealedMoving];
+  const targetCount = targetStack.cards.length;
+  const targetBottom =
+    targetCount > 0 ? targetStack.cards[targetCount - 1] : null;
+  // Exchange the bottom card only when it's still unrevealed — i.e., when the
+  // player gains new information by surfacing it. If the bottom is already
+  // revealed, no exchange happens.
+  const shouldExchange = !!targetBottom && !targetBottom.isRevealed;
+  // A pile forms whenever the result has placedMoving on top of at least one
+  // same-category card. That's any case except an empty target, or a 1-card
+  // target whose only card jumps away.
+  const willCreatePile =
+    targetCount >= 2 || (targetCount === 1 && !shouldExchange);
+
+  const placedMoving: Card = {
+    ...movingCard,
+    isRevealed: true,
+    isPileCard: willCreatePile ? true : undefined,
+  };
+
+  let newSourceCards: Card[];
+  if (shouldExchange) {
+    const jumped: Card = {
+      ...targetBottom!,
+      isPileCard: undefined,
+    };
+    newSourceCards = [jumped, ...sourceStack.cards.slice(1)];
+  } else {
+    newSourceCards = sourceStack.cards.slice(1);
+  }
+
+  let newTargetCards: Card[];
+  if (targetCount === 0 || (targetCount === 1 && shouldExchange)) {
+    newTargetCards = [placedMoving];
+  } else {
+    // Reveal the anchor and any consecutive same-category cards beneath it.
+    // Deeper buried cards of other categories stay in their existing state.
+    const pileCategory = placedMoving.category;
+    const anchor: Card = { ...targetTop!, isRevealed: true };
+    const tail = shouldExchange
+      ? targetStack.cards.slice(1, -1)
+      : targetStack.cards.slice(1);
+    const processedTail: Card[] = [];
+    let stillInRun = true;
+    for (const c of tail) {
+      if (stillInRun && c.category === pileCategory) {
+        processedTail.push(c.isRevealed ? c : { ...c, isRevealed: true });
+      } else {
+        stillInRun = false;
+        processedTail.push(c);
+      }
+    }
+    newTargetCards = [placedMoving, anchor, ...processedTail];
+  }
 
   const newRows = state.rows.map((r, i) => {
     if (i === fromRowIdx && i === toRowIdx) {
       return {
         ...r,
-        [fromSide]: { cards: newSourceCards, position: 0 },
-        [toSide]: { cards: newTargetCards, position: 0 },
+        [fromSide]: { ...sourceStack, cards: newSourceCards, position: 0 },
+        [toSide]: { ...targetStack, cards: newTargetCards, position: 0 },
       };
     }
     if (i === fromRowIdx) {
-      return { ...r, [fromSide]: { cards: newSourceCards, position: 0 } };
+      return {
+        ...r,
+        [fromSide]: { ...sourceStack, cards: newSourceCards, position: 0 },
+      };
     }
     if (i === toRowIdx) {
-      return { ...r, [toSide]: { cards: newTargetCards, position: 0 } };
+      return {
+        ...r,
+        [toSide]: { ...targetStack, cards: newTargetCards, position: 0 },
+      };
     }
     return r;
   });
@@ -235,7 +332,7 @@ function applyDropToFoundation(
 
   const newSourceRow: Row = {
     ...sourceRow,
-    [fromSide]: { cards: sourceStack.cards.slice(1), position: 0 },
+    [fromSide]: { ...sourceStack, cards: sourceStack.cards.slice(1), position: 0 },
   };
   const rowsAfterPull = state.rows.map((r, i) =>
     i === fromRowIdx ? newSourceRow : r,

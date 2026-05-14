@@ -3,6 +3,7 @@ import { LEVELS } from './levels';
 import { makeInitialAppState, reduce } from './game/reducer';
 import { DragProvider } from './components/dragLayer';
 import { Header } from './components/Header';
+import { Reserve } from './components/Reserve';
 import { Row } from './components/Row';
 import { Overlay } from './components/Overlay';
 
@@ -54,6 +55,7 @@ export function App() {
             />
           ))}
         </div>
+        <Reserve count={appState.state.reserve.length} />
 
         {appState.outcome === 'won' && (
           <Overlay
