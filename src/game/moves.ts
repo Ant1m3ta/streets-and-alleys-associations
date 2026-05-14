@@ -175,9 +175,6 @@ function applyCycle(state: GameState, rowIdx: number, side: StackSide): GameStat
   if (stack.cards.length < 2) {
     throw new Error('Nothing to cycle');
   }
-  if (stack.cards.some((c) => c.isPileCard)) {
-    throw new Error('Stack is locked');
-  }
   let prefixLen = 0;
   while (prefixLen < stack.cards.length && stack.cards[prefixLen].isRevealed) {
     prefixLen++;
@@ -229,6 +226,18 @@ function applyMoveToStack(
   }
 
   const targetCount = targetStack.cards.length;
+  const wouldCreateNewPile = targetCount >= 1 && !targetTop?.isPileCard;
+  if (wouldCreateNewPile) {
+    const sameSideHasPileBelow = targetStack.cards.some((c) => c.isPileCard);
+    const oppositeSide: StackSide = toSide === 'left' ? 'right' : 'left';
+    const oppositeHasPile = targetRow[oppositeSide].cards.some(
+      (c) => c.isPileCard,
+    );
+    if (sameSideHasPileBelow || oppositeHasPile) {
+      throw new Error('Row already has a pile');
+    }
+  }
+
   const targetBottom =
     targetCount > 0 ? targetStack.cards[targetCount - 1] : null;
   // Exchange the bottom card only when it's genuinely buried (>= 2 cards) and
