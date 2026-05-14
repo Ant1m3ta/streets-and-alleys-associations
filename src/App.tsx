@@ -2,6 +2,7 @@ import { useEffect, useReducer, useState } from 'react';
 import { LEVELS } from './levels';
 import { makeInitialAppState, reduce } from './game/reducer';
 import { DragProvider } from './components/dragLayer';
+import { FlipProvider } from './components/flipLayer';
 import { Header } from './components/Header';
 import { Reserve } from './components/Reserve';
 import { Row } from './components/Row';
@@ -31,6 +32,7 @@ export function App() {
   }
 
   return (
+    <FlipProvider>
     <DragProvider>
       <div className="app">
         <Header
@@ -76,5 +78,6 @@ export function App() {
         )}
       </div>
     </DragProvider>
+    </FlipProvider>
   );
 }
