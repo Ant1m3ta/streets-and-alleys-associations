@@ -26,7 +26,6 @@ export function useFlip(): FlipContextValue {
 
 const FLIP_DURATION_MS = 320;
 const FLIP_EASING = 'cubic-bezier(0.2, 0.7, 0.2, 1)';
-const FLY_Z_INDEX = '10001';
 
 function escapeCardUid(uid: string): string {
   if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
@@ -61,20 +60,20 @@ export function FlipProvider({ children }: { children: ReactNode }) {
       const dx = fromRect.left - toRect.left;
       const dy = fromRect.top - toRect.top;
       if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) continue;
-      const originalZ = el.style.zIndex;
+      const baseTransform = el.style.transform;
       el.style.transition = 'none';
-      el.style.transform = `translate(${dx}px, ${dy}px)`;
-      el.style.zIndex = FLY_Z_INDEX;
+      el.style.transform = baseTransform
+        ? `translate(${dx}px, ${dy}px) ${baseTransform}`
+        : `translate(${dx}px, ${dy}px)`;
       void el.offsetHeight;
       requestAnimationFrame(() => {
         el.style.transition = `transform ${FLIP_DURATION_MS}ms ${FLIP_EASING}`;
-        el.style.transform = '';
+        el.style.transform = baseTransform;
       });
       const onEnd = (e: TransitionEvent) => {
         if (e.propertyName !== 'transform') return;
         el.style.transition = '';
-        el.style.transform = '';
-        el.style.zIndex = originalZ;
+        el.style.transform = baseTransform;
         el.removeEventListener('transitionend', onEnd);
       };
       el.addEventListener('transitionend', onEnd);

@@ -253,7 +253,7 @@ function applyMoveToStack(
       ...targetBottom!,
       isPileCard: undefined,
     };
-    newSourceCards = [jumped, ...sourceStack.cards.slice(1)];
+    newSourceCards = [...sourceStack.cards.slice(1), jumped];
   } else {
     newSourceCards = sourceStack.cards.slice(1);
   }
