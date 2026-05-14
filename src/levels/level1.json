@@ -1,6 +1,6 @@
 {
   "levelId": "level-1",
-  "movesLimit": 50,
+  "movesLimit": -1,
   "categories": [
     {
       "categoryId": "Colors",
@@ -46,20 +46,112 @@
         { "wordId": "Water" },
         { "wordId": "Juice" }
       ]
+    },
+    {
+      "categoryId": "Vehicles",
+      "wordsData": [
+        { "wordId": "airplane", "icon": true, "imageId": "vehicles__airplane" },
+        { "wordId": "boat", "icon": true, "imageId": "vehicles__boat" },
+        { "wordId": "monster_truck", "icon": true, "imageId": "vehicles__monster_truck" },
+        { "wordId": "purple_scooter", "icon": true, "imageId": "vehicles__purple_scooter" },
+        { "wordId": "red_car", "icon": true, "imageId": "vehicles__red_car" },
+        { "wordId": "steam_train", "icon": true, "imageId": "vehicles__steam_train" }
+      ]
+    },
+    {
+      "categoryId": "Creatures",
+      "wordsData": [
+        { "wordId": "cute_fire_dragon", "icon": true, "imageId": "creatures__cute_fire_dragon" },
+        { "wordId": "three_headed_snake", "icon": true, "imageId": "creatures__three_headed_snake" },
+        { "wordId": "skeleton_knight", "icon": true, "imageId": "creatures__skeleton_knight" },
+        { "wordId": "cute_purple_octo", "icon": true, "imageId": "creatures__cute_purple_octo" },
+        { "wordId": "phoenix", "icon": true, "imageId": "creatures__phoenix" },
+        { "wordId": "unicorn", "icon": true, "imageId": "creatures__unicorn" }
+      ]
+    },
+    {
+      "categoryId": "Instruments",
+      "wordsData": [
+        { "wordId": "acoustic_guitar", "icon": true, "imageId": "instruments__acoustic_guitar" },
+        { "wordId": "bagpipe", "icon": true, "imageId": "instruments__bagpipe" },
+        { "wordId": "banjo", "icon": true, "imageId": "instruments__banjo" },
+        { "wordId": "bassoon", "icon": true, "imageId": "instruments__bassoon" },
+        { "wordId": "cello", "icon": true, "imageId": "instruments__cello" },
+        { "wordId": "harp", "icon": true, "imageId": "instruments__harp" }
+      ]
+    },
+    {
+      "categoryId": "Sweets",
+      "wordsData": [
+        { "wordId": "brownie", "icon": true, "imageId": "sweets__brownie" },
+        { "wordId": "candy_corn", "icon": true, "imageId": "sweets__candy_corn" },
+        { "wordId": "caramel", "icon": true, "imageId": "sweets__caramel" },
+        { "wordId": "chocolate_bar", "icon": true, "imageId": "sweets__chocolate_bar" },
+        { "wordId": "chocolate_cake", "icon": true, "imageId": "sweets__chocolate_cake" },
+        { "wordId": "fudge", "icon": true, "imageId": "sweets__fudge" }
+      ]
+    },
+    {
+      "categoryId": "Sports",
+      "wordsData": [
+        { "wordId": "Soccer" },
+        { "wordId": "Tennis" },
+        { "wordId": "Basketball" },
+        { "wordId": "Boxing" },
+        { "wordId": "Hockey" },
+        { "wordId": "Skiing" }
+      ]
+    },
+    {
+      "categoryId": "Planets",
+      "wordsData": [
+        { "wordId": "Mars" },
+        { "wordId": "Venus" },
+        { "wordId": "Earth" },
+        { "wordId": "Saturn" },
+        { "wordId": "Jupiter" },
+        { "wordId": "Mercury" }
+      ]
+    },
+    {
+      "categoryId": "Weather",
+      "wordsData": [
+        { "wordId": "Sunny" },
+        { "wordId": "Rainy" },
+        { "wordId": "Snowy" },
+        { "wordId": "Cloudy" },
+        { "wordId": "Stormy" },
+        { "wordId": "Windy" }
+      ]
+    },
+    {
+      "categoryId": "Furniture",
+      "wordsData": [
+        { "wordId": "Bed" },
+        { "wordId": "Chair" },
+        { "wordId": "Sofa" },
+        { "wordId": "Table" },
+        { "wordId": "Lamp" },
+        { "wordId": "Desk" }
+      ]
     }
   ],
   "rows": [
     {
-      "left": ["Apple", "Tools", "Cherry", "Tea"],
-      "right": ["Cat", "Saw", "Banana", "Red"]
+      "left": ["Fruits", "Red", "Dog", "acoustic_guitar", "Animals", "caramel", "Coffee", "Hockey", "Sunny", "red_car"],
+      "right": ["Cat", "Blue", "Tea", "bagpipe", "Tools", "steam_train", "chocolate_bar", "Skiing", "Rainy", "Sofa"]
     },
     {
-      "left": ["Hammer", "Dog", "Yellow", "Grape"],
-      "right": ["Animals", "Fish", "Drinks", "Bird"]
+      "left": ["Sweets", "Green", "Fish", "banjo", "Colors", "Water", "cute_fire_dragon", "chocolate_cake", "Mars", "Snowy"],
+      "right": ["Bird", "Yellow", "Juice", "bassoon", "Creatures", "three_headed_snake", "fudge", "Venus", "Cloudy", "Table"]
     },
     {
-      "left": ["Blue", "Coffee", "Wrench", "Drill", "Colors"],
-      "right": ["Fruits", "Juice", "Green", "Water"]
+      "left": ["Sports", "Apple", "Hammer", "cello", "Planets", "airplane", "skeleton_knight", "Earth", "Stormy", "Soccer"],
+      "right": ["Saw", "Banana", "boat", "harp", "Instruments", "cute_purple_octo", "Tennis", "Saturn", "Windy", "Lamp"]
+    },
+    {
+      "left": ["Vehicles", "Cherry", "Drill", "brownie", "Drinks", "monster_truck", "phoenix", "Basketball", "Jupiter", "Bed"],
+      "right": ["Grape", "Weather", "Wrench", "purple_scooter", "candy_corn", "Furniture", "unicorn", "Boxing", "Mercury", "Chair", "Desk"]
     }
   ]
 }
