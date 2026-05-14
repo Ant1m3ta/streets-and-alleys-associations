@@ -4,6 +4,7 @@ interface Props {
   movesUsed: number;
   movesLimit: number;
   canRollback: boolean;
+  canShuffle: boolean;
   levels: LevelData[];
   currentLevelIdx: number;
   onLevelChange: (idx: number) => void;
@@ -14,6 +15,7 @@ export function Header({
   movesUsed,
   movesLimit,
   canRollback,
+  canShuffle,
   levels,
   currentLevelIdx,
   onLevelChange,
@@ -39,6 +41,14 @@ export function Header({
           {movesLimit >= 0 ? ` / ${movesLimit}` : ''}
         </strong>
       </div>
+      <button
+        type="button"
+        className="shuffle-btn"
+        disabled={!canShuffle}
+        onClick={() => dispatch({ type: 'SHUFFLE' })}
+      >
+        Shuffle
+      </button>
       <button
         type="button"
         className="rollback-btn"

@@ -49,8 +49,8 @@ body {
   font-size: 15px;
   font-weight: 700;
 }
-.rollback-btn {
-  background: #ff7e36;
+.rollback-btn,
+.shuffle-btn {
   border: none;
   color: white;
   padding: 6px 14px;
@@ -61,7 +61,10 @@ body {
   font-family: inherit;
   letter-spacing: 0.2px;
 }
-.rollback-btn:disabled {
+.rollback-btn { background: #ff7e36; }
+.shuffle-btn { background: #4a8fbf; }
+.rollback-btn:disabled,
+.shuffle-btn:disabled {
   opacity: 0.35;
   cursor: not-allowed;
 }

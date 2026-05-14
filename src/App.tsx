@@ -36,6 +36,7 @@ export function App() {
           movesUsed={appState.state.movesUsed}
           movesLimit={appState.state.movesLimit}
           canRollback={appState.history.length > 0}
+          canShuffle={!blocked}
           levels={LEVELS}
           currentLevelIdx={levelIdx}
           onLevelChange={handleLevelChange}

@@ -48,7 +48,36 @@ export function applyAction(state: GameState, action: Action): GameState {
         action.fromSide,
         action.toRowIdx,
       );
+    case 'SHUFFLE':
+      return applyShuffle(state);
   }
+}
+
+function applyShuffle(state: GameState): GameState {
+  const all: Card[] = [];
+  for (const row of state.rows) {
+    all.push(...row.left.cards, ...row.right.cards);
+  }
+  if (all.length < 2) {
+    throw new Error('Nothing to shuffle');
+  }
+  for (let i = all.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [all[i], all[j]] = [all[j], all[i]];
+  }
+  let idx = 0;
+  const newRows = state.rows.map((row) => {
+    const left = all.slice(idx, idx + row.left.cards.length);
+    idx += row.left.cards.length;
+    const right = all.slice(idx, idx + row.right.cards.length);
+    idx += row.right.cards.length;
+    return { ...row, left: { cards: left }, right: { cards: right } };
+  });
+  return {
+    ...state,
+    rows: newRows,
+    movesUsed: state.movesUsed + 1,
+  };
 }
 
 function applyCycle(state: GameState, rowIdx: number, side: StackSide): GameState {

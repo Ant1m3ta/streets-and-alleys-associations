@@ -67,7 +67,8 @@ export type Action =
       toRowIdx: number;
       fromRowIdx: number;
       fromSide: StackSide;
-    };
+    }
+  | { type: 'SHUFFLE' };
 
 export type AppAction =
   | Action
