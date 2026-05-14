@@ -61,6 +61,8 @@ export function applyAction(state: GameState, action: Action): GameState {
   }
 }
 
+const MIN_CARDS_PER_STACK_ON_SHUFFLE = 3;
+
 function applyShuffle(state: GameState): GameState {
   const all: Card[] = [];
   for (const row of state.rows) {
@@ -73,12 +75,47 @@ function applyShuffle(state: GameState): GameState {
     const j = Math.floor(Math.random() * (i + 1));
     [all[i], all[j]] = [all[j], all[i]];
   }
+
+  const totalSlots = state.rows.length * 2;
+  let participating = totalSlots;
+  while (
+    participating > 1 &&
+    all.length < MIN_CARDS_PER_STACK_ON_SHUFFLE * participating
+  ) {
+    participating--;
+  }
+
+  const slotIndices = Array.from({ length: totalSlots }, (_, i) => i);
+  for (let i = slotIndices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [slotIndices[i], slotIndices[j]] = [slotIndices[j], slotIndices[i]];
+  }
+  const chosenSlots = slotIndices.slice(0, participating);
+
+  const sizes = new Array<number>(totalSlots).fill(0);
+  if (all.length >= MIN_CARDS_PER_STACK_ON_SHUFFLE * participating) {
+    for (const slot of chosenSlots) {
+      sizes[slot] = MIN_CARDS_PER_STACK_ON_SHUFFLE;
+    }
+    let remaining = all.length - MIN_CARDS_PER_STACK_ON_SHUFFLE * participating;
+    while (remaining > 0) {
+      const slot = chosenSlots[Math.floor(Math.random() * chosenSlots.length)];
+      sizes[slot]++;
+      remaining--;
+    }
+  } else {
+    // Not enough cards to give even a single stack the minimum — dump all into one.
+    sizes[chosenSlots[0]] = all.length;
+  }
+
   let idx = 0;
-  const newRows = state.rows.map((row) => {
-    const left = all.slice(idx, idx + row.left.cards.length);
-    idx += row.left.cards.length;
-    const right = all.slice(idx, idx + row.right.cards.length);
-    idx += row.right.cards.length;
+  const newRows = state.rows.map((row, rowIdx) => {
+    const leftCount = sizes[rowIdx * 2];
+    const rightCount = sizes[rowIdx * 2 + 1];
+    const left = all.slice(idx, idx + leftCount);
+    idx += leftCount;
+    const right = all.slice(idx, idx + rightCount);
+    idx += rightCount;
     return {
       ...row,
       left: { cards: left, position: 0 },
