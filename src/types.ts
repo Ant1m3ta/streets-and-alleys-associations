@@ -6,8 +6,8 @@ export interface Card {
   isCategory: boolean;
   isIcon?: boolean;
   imageId?: string;
-  // True once another card has been stacked on top of this one. Sticky: never
-  // resets to false. Buried revealed cards render face-up in the visible strip.
+  // Sticky flag set on both participants of a stack-onto-stack drop. Buried
+  // revealed cards render face-up in the visible strip.
   isRevealed?: boolean;
 }
 

@@ -137,10 +137,10 @@ function applyMoveToStack(
   }
 
   const newSourceCards = sourceStack.cards.slice(1);
-  const buriedTop = targetTop ? { ...targetTop, isRevealed: true } : null;
-  const newTargetCards = buriedTop
-    ? [movingCard, buriedTop, ...targetStack.cards.slice(1)]
-    : [movingCard];
+  const revealedMoving = { ...movingCard, isRevealed: true };
+  const newTargetCards = targetTop
+    ? [revealedMoving, { ...targetTop, isRevealed: true }, ...targetStack.cards.slice(1)]
+    : [revealedMoving];
 
   const newRows = state.rows.map((r, i) => {
     if (i === fromRowIdx && i === toRowIdx) {
