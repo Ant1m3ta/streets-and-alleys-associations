@@ -102,6 +102,12 @@ body {
 .stack-left .stack-card { right: 0; }
 .stack-right .stack-card { left: 0; }
 .stack-card.buried { opacity: 0.95; }
+.stack.drop-target {
+  outline: 2px solid #6cf;
+  outline-offset: 4px;
+  border-radius: 8px;
+  background: rgba(102, 204, 255, 0.12);
+}
 .stack-counter {
   position: absolute;
   top: 2px;

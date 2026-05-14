@@ -1,4 +1,4 @@
-import type { PointerEvent } from 'react';
+import { useEffect, type PointerEvent } from 'react';
 import type { AppAction, Stack as StackData, StackSide } from '../types';
 import { CardView } from './CardView';
 import { useDrag } from './dragLayer';
@@ -15,10 +15,27 @@ const FAN_OFFSET_PX = 14;
 const VISIBLE_DEPTH = 5;
 
 export function Stack({ stack, rowIdx, side, disabled, dispatch }: Props) {
-  const { startDrag, draggingFromKey } = useDrag();
+  const { startDrag, draggingFromKey, registerDropTarget, activeHoverId } = useDrag();
   const sourceKey = `stack-${rowIdx}-${side}`;
+  const dropId = sourceKey;
   const top = stack.cards[0] ?? null;
   const isDraggingFromHere = draggingFromKey === sourceKey;
+  const isHovered = activeHoverId === dropId && draggingFromKey !== sourceKey;
+
+  useEffect(() => {
+    if (disabled) return;
+    return registerDropTarget(dropId, (payload) => {
+      const p = payload as { fromRowIdx: number; fromSide: StackSide };
+      if (p.fromRowIdx === rowIdx && p.fromSide === side) return;
+      dispatch({
+        type: 'MOVE_TO_STACK',
+        fromRowIdx: p.fromRowIdx,
+        fromSide: p.fromSide,
+        toRowIdx: rowIdx,
+        toSide: side,
+      });
+    });
+  }, [dropId, registerDropTarget, dispatch, rowIdx, side, disabled]);
 
   const buriedDepth = Math.min(stack.cards.length - 1, VISIBLE_DEPTH - 1);
   const direction = side === 'left' ? -1 : 1;
@@ -35,8 +52,12 @@ export function Stack({ stack, rowIdx, side, disabled, dispatch }: Props) {
     );
   };
 
+  const stackClasses = ['stack', `stack-${side}`, isHovered ? 'drop-target' : '']
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <div className={`stack stack-${side}`}>
+    <div className={stackClasses} data-drop-id={dropId}>
       {Array.from({ length: buriedDepth }).map((_, i) => {
         const depth = buriedDepth - i;
         const offset = depth * FAN_OFFSET_PX * direction;

@@ -71,6 +71,13 @@ export type Action =
       fromRowIdx: number;
       fromSide: StackSide;
     }
+  | {
+      type: 'MOVE_TO_STACK';
+      fromRowIdx: number;
+      fromSide: StackSide;
+      toRowIdx: number;
+      toSide: StackSide;
+    }
   | { type: 'SHUFFLE' };
 
 export type AppAction =

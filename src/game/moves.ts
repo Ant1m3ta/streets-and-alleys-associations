@@ -48,6 +48,14 @@ export function applyAction(state: GameState, action: Action): GameState {
         action.fromSide,
         action.toRowIdx,
       );
+    case 'MOVE_TO_STACK':
+      return applyMoveToStack(
+        state,
+        action.fromRowIdx,
+        action.fromSide,
+        action.toRowIdx,
+        action.toSide,
+      );
     case 'SHUFFLE':
       return applyShuffle(state);
   }
@@ -100,6 +108,57 @@ function applyCycle(state: GameState, rowIdx: number, side: StackSide): GameStat
   return {
     ...state,
     rows: state.rows.map((r, i) => (i === rowIdx ? newRow : r)),
+    movesUsed: state.movesUsed + 1,
+  };
+}
+
+function applyMoveToStack(
+  state: GameState,
+  fromRowIdx: number,
+  fromSide: StackSide,
+  toRowIdx: number,
+  toSide: StackSide,
+): GameState {
+  if (fromRowIdx === toRowIdx && fromSide === toSide) {
+    throw new Error('Cannot move onto the same stack');
+  }
+  const sourceRow = state.rows[fromRowIdx];
+  if (!sourceRow) throw new Error('Invalid source row');
+  const targetRow = state.rows[toRowIdx];
+  if (!targetRow) throw new Error('Invalid target row');
+  const sourceStack = sourceRow[fromSide];
+  const targetStack = targetRow[toSide];
+  if (sourceStack.cards.length === 0) throw new Error('Source stack empty');
+
+  const movingCard = sourceStack.cards[0];
+  const targetTop = targetStack.cards[0];
+  if (targetTop && movingCard.category !== targetTop.category) {
+    throw new Error('Categories do not match');
+  }
+
+  const newSourceCards = sourceStack.cards.slice(1);
+  const newTargetCards = [movingCard, ...targetStack.cards];
+
+  const newRows = state.rows.map((r, i) => {
+    if (i === fromRowIdx && i === toRowIdx) {
+      return {
+        ...r,
+        [fromSide]: { cards: newSourceCards, position: 0 },
+        [toSide]: { cards: newTargetCards, position: 0 },
+      };
+    }
+    if (i === fromRowIdx) {
+      return { ...r, [fromSide]: { cards: newSourceCards, position: 0 } };
+    }
+    if (i === toRowIdx) {
+      return { ...r, [toSide]: { cards: newTargetCards, position: 0 } };
+    }
+    return r;
+  });
+
+  return {
+    ...state,
+    rows: newRows,
     movesUsed: state.movesUsed + 1,
   };
 }
