@@ -7,7 +7,7 @@ interface Props {
 export function Reserve({ count }: Props) {
   if (count === 0) return null;
   return (
-    <div className="reserve">
+    <div className="reserve" data-reserve-anchor>
       <CardView card={null} faceDown>
         <span className="reserve-count">{count}</span>
       </CardView>

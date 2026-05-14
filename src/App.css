@@ -98,6 +98,7 @@ body {
   top: 0;
   width: 56px;
   height: 80px;
+  will-change: transform;
 }
 .stack-left .stack-card { right: 0; }
 .stack-right .stack-card { left: 0; }

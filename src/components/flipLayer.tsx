@@ -2,16 +2,26 @@ import { useLayoutEffect, useRef, type ReactNode } from 'react';
 
 const FLIP_DURATION_MS = 320;
 const FLIP_EASING = 'cubic-bezier(0.2, 0.7, 0.2, 1)';
+const RESERVE_STAGGER_MS = 80;
 
-function applyFlip(el: HTMLElement, dx: number, dy: number): void {
+function applyFlip(
+  el: HTMLElement,
+  dx: number,
+  dy: number,
+  delayMs: number,
+): void {
   const baseTransform = el.style.transform;
   el.style.transition = 'none';
   el.style.transform = baseTransform
     ? `translate(${dx}px, ${dy}px) ${baseTransform}`
     : `translate(${dx}px, ${dy}px)`;
   void el.offsetHeight;
+  const transitionValue =
+    delayMs > 0
+      ? `transform ${FLIP_DURATION_MS}ms ${FLIP_EASING} ${delayMs}ms`
+      : `transform ${FLIP_DURATION_MS}ms ${FLIP_EASING}`;
   requestAnimationFrame(() => {
-    el.style.transition = `transform ${FLIP_DURATION_MS}ms ${FLIP_EASING}`;
+    el.style.transition = transitionValue;
     el.style.transform = baseTransform;
   });
   const onEnd = (e: TransitionEvent) => {
@@ -25,24 +35,49 @@ function applyFlip(el: HTMLElement, dx: number, dy: number): void {
 
 export function FlipProvider({ children }: { children: ReactNode }) {
   const prevRectsRef = useRef<Map<string, DOMRect>>(new Map());
+  const prevReserveRectRef = useRef<DOMRect | null>(null);
 
   useLayoutEffect(() => {
     const cards = document.querySelectorAll<HTMLElement>('[data-card-uid]');
     const prev = prevRectsRef.current;
+    const reserveFromRect = prevReserveRectRef.current;
     const next = new Map<string, DOMRect>();
+    type Move = {
+      el: HTMLElement;
+      dx: number;
+      dy: number;
+      fromReserve: boolean;
+    };
+    const moves: Move[] = [];
     for (const el of cards) {
       const uid = el.dataset.cardUid;
       if (!uid) continue;
       const rect = el.getBoundingClientRect();
       next.set(uid, rect);
-      const oldRect = prev.get(uid);
+      const fromPrev = prev.get(uid);
+      const oldRect = fromPrev ?? reserveFromRect;
       if (!oldRect) continue;
       const dx = oldRect.left - rect.left;
       const dy = oldRect.top - rect.top;
       if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) continue;
-      applyFlip(el, dx, dy);
+      moves.push({ el, dx, dy, fromReserve: !fromPrev });
+    }
+    const reserveCount = moves.reduce(
+      (n, m) => n + (m.fromReserve ? 1 : 0),
+      0,
+    );
+    let reserveIdx = 0;
+    for (const m of moves) {
+      const delay = m.fromReserve
+        ? (reserveCount - 1 - reserveIdx++) * RESERVE_STAGGER_MS
+        : 0;
+      applyFlip(m.el, m.dx, m.dy, delay);
     }
     prevRectsRef.current = next;
+    const reserveEl = document.querySelector<HTMLElement>(
+      '[data-reserve-anchor] .card',
+    );
+    prevReserveRectRef.current = reserveEl?.getBoundingClientRect() ?? null;
   });
 
   return <>{children}</>;
