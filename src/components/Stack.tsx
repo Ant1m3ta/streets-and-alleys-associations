@@ -2,7 +2,6 @@ import { useEffect, type PointerEvent } from 'react';
 import type { AppAction, Stack as StackData, StackSide } from '../types';
 import { CardView } from './CardView';
 import { useDrag } from './dragLayer';
-import { useFlip } from './flipLayer';
 
 interface Props {
   stack: StackData;
@@ -17,7 +16,6 @@ const VISIBLE_DEPTH = 99;
 
 export function Stack({ stack, rowIdx, side, disabled, dispatch }: Props) {
   const { startDrag, draggingFromKey, registerDropTarget, activeHoverId } = useDrag();
-  const { scheduleFlip } = useFlip();
   const sourceKey = `stack-${rowIdx}-${side}`;
   const dropId = sourceKey;
   const top = stack.cards[0] ?? null;
@@ -29,12 +27,6 @@ export function Stack({ stack, rowIdx, side, disabled, dispatch }: Props) {
     return registerDropTarget(dropId, (payload) => {
       const p = payload as { fromRowIdx: number; fromSide: StackSide };
       if (p.fromRowIdx === rowIdx && p.fromSide === side) return;
-      const targetCount = stack.cards.length;
-      const targetBottom =
-        targetCount > 0 ? stack.cards[targetCount - 1] : null;
-      if (targetBottom && !targetBottom.isRevealed) {
-        scheduleFlip(targetBottom.uid);
-      }
       dispatch({
         type: 'MOVE_TO_STACK',
         fromRowIdx: p.fromRowIdx,
@@ -43,16 +35,7 @@ export function Stack({ stack, rowIdx, side, disabled, dispatch }: Props) {
         toSide: side,
       });
     });
-  }, [
-    dropId,
-    registerDropTarget,
-    dispatch,
-    rowIdx,
-    side,
-    disabled,
-    stack.cards,
-    scheduleFlip,
-  ]);
+  }, [dropId, registerDropTarget, dispatch, rowIdx, side, disabled]);
 
   const buriedDepth = Math.min(stack.cards.length - 1, VISIBLE_DEPTH - 1);
   const direction = side === 'left' ? -1 : 1;
