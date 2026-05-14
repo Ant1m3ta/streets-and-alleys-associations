@@ -14,6 +14,8 @@ Phone-first browser prototype of a Streets-&-Alleys-style word solitaire. TypeSc
 
 No tests exist. There is no linter. Verify changes by running the dev server on a phone-sized viewport (or with browser devtools mobile emulation) and exercising the affected mechanic.
 
+**Always run `npm run build` and `npm run dev` yourself** — do not ask the user to run them. Run `npm run build` to validate TypeScript after code changes; run `npm run dev` (in the background) to exercise UI changes before reporting a task done.
+
 ## Architecture
 
 ### State model (single reducer)
