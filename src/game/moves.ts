@@ -136,11 +136,23 @@ function applyCycle(state: GameState, rowIdx: number, side: StackSide): GameStat
   if (stack.cards.length < 2) {
     throw new Error('Nothing to cycle');
   }
-  const [top, ...rest] = stack.cards;
-  const cycled = [...rest, top];
+  let prefixLen = 0;
+  while (prefixLen < stack.cards.length && stack.cards[prefixLen].isRevealed) {
+    prefixLen++;
+  }
+  if (prefixLen === stack.cards.length) {
+    throw new Error('Stack fully revealed; nothing to cycle past');
+  }
+  const cycleCount = prefixLen > 0 ? prefixLen : 1;
+  const moved = stack.cards.slice(0, cycleCount);
+  const rest = stack.cards.slice(cycleCount);
+  const cycled = [...rest, ...moved];
   const newRow: Row = {
     ...row,
-    [side]: { cards: cycled, position: (stack.position + 1) % cycled.length },
+    [side]: {
+      cards: cycled,
+      position: (stack.position + cycleCount) % cycled.length,
+    },
   };
   return {
     ...state,
