@@ -12,7 +12,7 @@ interface Props {
 }
 
 const FAN_OFFSET_PX = 14;
-const VISIBLE_DEPTH = 5;
+const VISIBLE_DEPTH = 99;
 
 export function Stack({ stack, rowIdx, side, disabled, dispatch }: Props) {
   const { startDrag, draggingFromKey, registerDropTarget, activeHoverId } = useDrag();
@@ -84,11 +84,6 @@ export function Stack({ stack, rowIdx, side, disabled, dispatch }: Props) {
         <div className="stack-card empty">
           <div className="stack-empty-slot" />
         </div>
-      )}
-      {stack.cards.length > 0 && (
-        <span className="stack-counter">
-          {stack.position + 1}/{stack.cards.length}
-        </span>
       )}
     </div>
   );
