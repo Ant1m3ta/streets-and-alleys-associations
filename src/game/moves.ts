@@ -231,15 +231,12 @@ function applyMoveToStack(
   const targetCount = targetStack.cards.length;
   const targetBottom =
     targetCount > 0 ? targetStack.cards[targetCount - 1] : null;
-  // Exchange the bottom card only when it's still unrevealed — i.e., when the
-  // player gains new information by surfacing it. If the bottom is already
-  // revealed, no exchange happens.
-  const shouldExchange = !!targetBottom && !targetBottom.isRevealed;
-  // A pile forms whenever the result has placedMoving on top of at least one
-  // same-category card. That's any case except an empty target, or a 1-card
-  // target whose only card jumps away.
-  const willCreatePile =
-    targetCount >= 2 || (targetCount === 1 && !shouldExchange);
+  // Exchange the bottom card only when it's genuinely buried (>= 2 cards) and
+  // still unrevealed — i.e., when the player gains new information by
+  // surfacing it. A single-card target has nothing buried to expose.
+  const shouldExchange =
+    targetCount >= 2 && !!targetBottom && !targetBottom.isRevealed;
+  const willCreatePile = targetCount >= 1;
 
   const placedMoving: Card = {
     ...movingCard,
@@ -259,7 +256,7 @@ function applyMoveToStack(
   }
 
   let newTargetCards: Card[];
-  if (targetCount === 0 || (targetCount === 1 && shouldExchange)) {
+  if (targetCount === 0) {
     newTargetCards = [placedMoving];
   } else {
     // Reveal the anchor and any consecutive same-category cards beneath it.
