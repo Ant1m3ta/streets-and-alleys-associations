@@ -61,13 +61,19 @@ export function Stack({ stack, rowIdx, side, disabled, dispatch }: Props) {
       {Array.from({ length: buriedDepth }).map((_, i) => {
         const depth = buriedDepth - i;
         const offset = depth * FAN_OFFSET_PX * direction;
+        const buriedCard = stack.cards[depth];
+        const revealed = !!buriedCard?.isRevealed;
         return (
           <div
-            key={`buried-${i}`}
+            key={buriedCard?.uid ?? `buried-${i}`}
             className="stack-card buried"
             style={{ transform: `translateX(${offset}px)`, zIndex: i }}
           >
-            <CardView card={null} faceDown />
+            <CardView
+              card={revealed ? buriedCard : null}
+              faceDown={!revealed}
+              buriedRevealedSide={revealed ? side : undefined}
+            />
           </div>
         );
       })}

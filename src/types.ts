@@ -6,6 +6,9 @@ export interface Card {
   isCategory: boolean;
   isIcon?: boolean;
   imageId?: string;
+  // True once another card has been stacked on top of this one. Sticky: never
+  // resets to false. Buried revealed cards render face-up in the visible strip.
+  isRevealed?: boolean;
 }
 
 export type StackSide = 'left' | 'right';

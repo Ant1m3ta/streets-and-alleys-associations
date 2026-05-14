@@ -1,5 +1,5 @@
 import type { CSSProperties, PointerEvent, ReactNode } from 'react';
-import type { Card } from '../types';
+import type { Card, StackSide } from '../types';
 
 interface Props {
   card: Card | null;
@@ -9,6 +9,9 @@ interface Props {
   isDropTarget?: boolean;
   counter?: { current: number; total: number };
   inFoundation?: boolean;
+  // When set, render face-up but place the content (label/image) in the 14px
+  // visible strip on the indicated side, rotated to read vertically.
+  buriedRevealedSide?: StackSide;
   className?: string;
   style?: CSSProperties;
   onPointerDown?: (e: PointerEvent<HTMLDivElement>) => void;
@@ -23,6 +26,7 @@ export function CardView({
   isDropTarget,
   counter,
   inFoundation,
+  buriedRevealedSide,
   className = '',
   style,
   onPointerDown,
@@ -37,6 +41,7 @@ export function CardView({
     isDragging ? 'dragging' : '',
     isDropTarget ? 'drop-target' : '',
     isLockedSimple ? 'locked-simple' : '',
+    buriedRevealedSide ? `buried-revealed buried-revealed-${buriedRevealedSide}` : '',
     className,
   ]
     .filter(Boolean)

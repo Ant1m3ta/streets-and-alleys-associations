@@ -190,6 +190,42 @@ body {
   pointer-events: none;
   display: block;
 }
+
+/* Buried but revealed: content lives in the 14px visible strip, rotated. */
+.card.buried-revealed {
+  padding: 0;
+  overflow: hidden;
+}
+.card.buried-revealed .card-label,
+.card.buried-revealed .card-image {
+  position: absolute;
+  top: 50%;
+  width: 76px;
+  height: 14px;
+  pointer-events: none;
+}
+.card.buried-revealed .card-label {
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 14px;
+  white-space: nowrap;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card.buried-revealed .card-image {
+  object-fit: contain;
+}
+.card.buried-revealed-left .card-label,
+.card.buried-revealed-left .card-image {
+  left: 7px;
+  transform: translate(-50%, -50%) rotate(-90deg);
+}
+.card.buried-revealed-right .card-label,
+.card.buried-revealed-right .card-image {
+  right: 7px;
+  transform: translate(50%, -50%) rotate(-90deg);
+}
 .card-counter {
   position: absolute;
   top: 2px;
