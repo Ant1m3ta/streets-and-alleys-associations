@@ -1,0 +1,65 @@
+{
+  "levelId": "level-1",
+  "movesLimit": 50,
+  "categories": [
+    {
+      "categoryId": "Colors",
+      "wordsData": [
+        { "wordId": "Red" },
+        { "wordId": "Blue" },
+        { "wordId": "Green" },
+        { "wordId": "Yellow" }
+      ]
+    },
+    {
+      "categoryId": "Fruits",
+      "wordsData": [
+        { "wordId": "Apple" },
+        { "wordId": "Banana" },
+        { "wordId": "Cherry" },
+        { "wordId": "Grape" }
+      ]
+    },
+    {
+      "categoryId": "Animals",
+      "wordsData": [
+        { "wordId": "Dog" },
+        { "wordId": "Cat" },
+        { "wordId": "Fish" },
+        { "wordId": "Bird" }
+      ]
+    },
+    {
+      "categoryId": "Tools",
+      "wordsData": [
+        { "wordId": "Hammer" },
+        { "wordId": "Saw" },
+        { "wordId": "Drill" },
+        { "wordId": "Wrench" }
+      ]
+    },
+    {
+      "categoryId": "Drinks",
+      "wordsData": [
+        { "wordId": "Coffee" },
+        { "wordId": "Tea" },
+        { "wordId": "Water" },
+        { "wordId": "Juice" }
+      ]
+    }
+  ],
+  "rows": [
+    {
+      "left": ["Apple", "Tools", "Cherry", "Tea"],
+      "right": ["Cat", "Saw", "Banana", "Red"]
+    },
+    {
+      "left": ["Hammer", "Dog", "Yellow", "Grape"],
+      "right": ["Animals", "Fish", "Drinks", "Bird"]
+    },
+    {
+      "left": ["Blue", "Coffee", "Wrench", "Drill", "Colors"],
+      "right": ["Fruits", "Juice", "Green", "Water"]
+    }
+  ]
+}

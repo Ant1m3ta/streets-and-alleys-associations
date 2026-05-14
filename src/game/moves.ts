@@ -1,0 +1,167 @@
+import type {
+  Action,
+  Card,
+  CategorySlot,
+  GameState,
+  Row,
+  StackSide,
+} from '../types';
+import { countSimpleInCategory, totalSimpleInLevel } from './cards';
+
+export function isWon(state: GameState): boolean {
+  return state.consumedSimple.length >= totalSimpleInLevel(state.level);
+}
+
+export function hasMovesLeft(state: GameState): boolean {
+  return state.movesLimit < 0 || state.movesUsed < state.movesLimit;
+}
+
+export function isLost(state: GameState): boolean {
+  if (isWon(state)) return false;
+  return !hasMovesLeft(state);
+}
+
+export function canPlaceInFoundation(card: Card, slot: CategorySlot): boolean {
+  if (slot.lockedCategory === null) return card.isCategory;
+  if (card.category !== slot.lockedCategory) return false;
+  return !card.isCategory;
+}
+
+export function hasValidMoveForStackTop(card: Card, state: GameState): boolean {
+  for (const row of state.rows) {
+    if (canPlaceInFoundation(card, row.foundation)) return true;
+  }
+  return false;
+}
+
+export function applyAction(state: GameState, action: Action): GameState {
+  if (!hasMovesLeft(state)) {
+    throw new Error('No moves left');
+  }
+  switch (action.type) {
+    case 'CYCLE_STACK':
+      return applyCycle(state, action.rowIdx, action.side);
+    case 'DROP_TO_FOUNDATION':
+      return applyDropToFoundation(
+        state,
+        action.fromRowIdx,
+        action.fromSide,
+        action.toRowIdx,
+      );
+  }
+}
+
+function applyCycle(state: GameState, rowIdx: number, side: StackSide): GameState {
+  const row = state.rows[rowIdx];
+  if (!row) throw new Error('Invalid row');
+  const stack = row[side];
+  if (stack.cards.length < 2) {
+    throw new Error('Nothing to cycle');
+  }
+  const [top, ...rest] = stack.cards;
+  const newRow: Row = {
+    ...row,
+    [side]: { cards: [...rest, top] },
+  };
+  return {
+    ...state,
+    rows: state.rows.map((r, i) => (i === rowIdx ? newRow : r)),
+    movesUsed: state.movesUsed + 1,
+  };
+}
+
+function applyDropToFoundation(
+  state: GameState,
+  fromRowIdx: number,
+  fromSide: StackSide,
+  toRowIdx: number,
+): GameState {
+  const sourceRow = state.rows[fromRowIdx];
+  if (!sourceRow) throw new Error('Invalid source row');
+  const sourceStack = sourceRow[fromSide];
+  if (sourceStack.cards.length === 0) throw new Error('Source stack empty');
+  const card = sourceStack.cards[0];
+
+  const targetRow = state.rows[toRowIdx];
+  if (!targetRow) throw new Error('Invalid target row');
+  if (!canPlaceInFoundation(card, targetRow.foundation)) {
+    throw new Error('Cannot place this card in this foundation');
+  }
+
+  const newSourceRow: Row = {
+    ...sourceRow,
+    [fromSide]: { cards: sourceStack.cards.slice(1) },
+  };
+  const rowsAfterPull = state.rows.map((r, i) =>
+    i === fromRowIdx ? newSourceRow : r,
+  );
+
+  return placeCardInFoundation(
+    { ...state, rows: rowsAfterPull },
+    toRowIdx,
+    card,
+  );
+}
+
+function placeCardInFoundation(
+  state: GameState,
+  rowIdx: number,
+  card: Card,
+): GameState {
+  const row = state.rows[rowIdx];
+  const slot = row.foundation;
+  let newSlot: CategorySlot;
+  let newConsumed = state.consumedSimple;
+
+  if (slot.lockedCategory === null) {
+    // Empty foundation: card must be a category (caller already validated).
+    newSlot = {
+      lockedCategory: card.category,
+      displayedCard: card,
+      cardsConsumed: 0,
+    };
+  } else {
+    // Locked foundation: card is a matching simple (caller already validated).
+    newSlot = {
+      ...slot,
+      displayedCard: card,
+      cardsConsumed: slot.cardsConsumed + 1,
+    };
+    newConsumed = [...state.consumedSimple, card];
+  }
+
+  let newRows = state.rows.map((r, i) =>
+    i === rowIdx ? { ...r, foundation: newSlot } : r,
+  );
+
+  // Auto-clear: when all simples for the locked category are globally consumed,
+  // every foundation locked to that category clears. Mirrors the rule from the
+  // sibling word-solitaire project.
+  if (newSlot.lockedCategory !== null) {
+    const total = countSimpleInCategory(state.level, newSlot.lockedCategory);
+    const consumedForCategory = newConsumed.filter(
+      (c) => c.category === newSlot.lockedCategory,
+    ).length;
+    if (consumedForCategory >= total) {
+      newRows = newRows.map((r) =>
+        r.foundation.lockedCategory === newSlot.lockedCategory
+          ? {
+              ...r,
+              foundation: {
+                lockedCategory: null,
+                displayedCard: null,
+                cardsConsumed: 0,
+              },
+            }
+          : r,
+      );
+    }
+  }
+
+  return {
+    ...state,
+    rows: newRows,
+    consumedSimple: newConsumed,
+    movesUsed: state.movesUsed + 1,
+  };
+}

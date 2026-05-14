@@ -1,0 +1,258 @@
+* {
+  box-sizing: border-box;
+}
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  user-select: none;
+  overscroll-behavior: contain;
+  touch-action: manipulation;
+}
+
+.app {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============ Header ============ */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #2a2a4a;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.level-select {
+  background: #2a2a4a;
+  border: 1px solid #4a4a6a;
+  color: #ccc;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: inherit;
+}
+.app-header .moves {
+  flex: 1;
+  text-align: center;
+  letter-spacing: 0.2px;
+}
+.app-header .moves strong {
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+  font-weight: 700;
+}
+.rollback-btn {
+  background: #ff7e36;
+  border: none;
+  color: white;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.2px;
+}
+.rollback-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ============ Rows ============ */
+.rows {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 8px;
+  overflow: hidden;
+}
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* ============ Stack ============ */
+.stack {
+  position: relative;
+  width: 112px;
+  height: 80px;
+  flex-shrink: 0;
+}
+.stack-card {
+  position: absolute;
+  top: 0;
+  width: 56px;
+  height: 80px;
+}
+.stack-left .stack-card { right: 0; }
+.stack-right .stack-card { left: 0; }
+.stack-card.buried { opacity: 0.95; }
+.stack-empty-slot {
+  width: 56px;
+  height: 80px;
+  border: 2px dashed #4a4a6a;
+  border-radius: 6px;
+}
+
+/* ============ Card ============ */
+.card {
+  position: relative;
+  width: 56px;
+  height: 80px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4px;
+  background: #fafafa;
+  color: #1a1a2e;
+  border: 2px solid #888;
+  box-shadow: 1px 3px 5px rgba(0, 0, 0, 0.45);
+  font-size: 10px;
+  font-weight: 500;
+  word-break: break-word;
+  touch-action: none;
+}
+.card.category {
+  background: linear-gradient(135deg, #ffd966, #f2a72e);
+  font-weight: 700;
+  border-color: #b88f00;
+  color: #1a1a2e;
+}
+.card.face-down {
+  background: repeating-linear-gradient(
+    45deg,
+    #3a3a5a,
+    #3a3a5a 6px,
+    #2e2e4a 6px,
+    #2e2e4a 12px
+  );
+  color: transparent;
+  border-color: #4a4a6a;
+  pointer-events: none;
+}
+.card.draggable { cursor: grab; }
+.card.draggable:active { cursor: grabbing; }
+.card.dragging { opacity: 0.35; }
+.card.drop-target { outline: 3px solid #6cf; outline-offset: 2px; }
+
+.card-label { pointer-events: none; }
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  display: block;
+}
+.card-counter {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: rgba(26, 26, 46, 0.85);
+  color: #fff;
+  border-radius: 8px;
+  padding: 1px 4px;
+  font-size: 9px;
+  font-weight: 700;
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============ Foundation ============ */
+.foundation {
+  position: relative;
+  width: 56px;
+  height: 80px;
+  border: 2px dashed #4a4a6a;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.03);
+}
+.foundation.locked {
+  border-style: solid;
+  border-color: #888;
+  background: transparent;
+}
+.foundation.drop-target {
+  border-color: #6cf;
+  background: rgba(102, 204, 255, 0.18);
+}
+.foundation .card { pointer-events: none; }
+.empty-foundation {
+  font-size: 28px;
+  color: #555;
+  line-height: 1;
+}
+
+/* ============ Overlay ============ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 25, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+.overlay-card {
+  background: #1a1a2e;
+  border: 1px solid #4a4a6a;
+  padding: 28px 36px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
+  max-width: 86%;
+}
+.overlay-card h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+.overlay-subtitle {
+  margin: 0 0 20px;
+  opacity: 0.7;
+  font-size: 14px;
+}
+.overlay-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+.overlay-buttons button {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid #4a4a6a;
+  background: #2a2a4a;
+  color: white;
+  font-family: inherit;
+  cursor: pointer;
+}
+.overlay-buttons button.primary {
+  background: #6cf;
+  color: #1a1a2e;
+  border-color: #6cf;
+}
+
+/* ============ Drag ghost ============ */
+.drag-ghost .card {
+  transform: rotate(2deg);
+  box-shadow: 3px 8px 16px rgba(0, 0, 0, 0.5);
+}
