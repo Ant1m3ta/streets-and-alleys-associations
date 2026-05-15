@@ -4,6 +4,7 @@ import type {
   CategorySlot,
   GameState,
   Row,
+  Stack,
   StackSide,
 } from '../types';
 import { countSimpleInCategory, totalSimpleInLevel } from './cards';
@@ -169,6 +170,33 @@ function applyShuffle(state: GameState): GameState {
   };
 }
 
+// Enforces the invariant: if a pile contains a category card, that card sits at
+// the front (lowest index = top of stack) of the pile. Keeps buried category
+// cards reachable so they can be dropped to a foundation.
+function reorderCategoryToFrontOfPile(stack: Stack): Stack {
+  const cards = stack.cards;
+  let pileStart = -1;
+  for (let i = 0; i < cards.length; i++) {
+    if (cards[i].isPileCard) {
+      pileStart = i;
+      break;
+    }
+  }
+  if (pileStart === -1) return stack;
+  let categoryIdx = -1;
+  for (let i = pileStart; i < cards.length && cards[i].isPileCard; i++) {
+    if (cards[i].isCategory) {
+      categoryIdx = i;
+      break;
+    }
+  }
+  if (categoryIdx === -1 || categoryIdx === pileStart) return stack;
+  const newCards = [...cards];
+  const [categoryCard] = newCards.splice(categoryIdx, 1);
+  newCards.splice(pileStart, 0, categoryCard);
+  return { ...stack, cards: newCards };
+}
+
 function autoMergeAdjacentSingle(
   state: GameState,
   rowIdx: number,
@@ -191,10 +219,11 @@ function autoMergeAdjacentSingle(
       const newCards = cards.map((c, idx) =>
         idx === i ? { ...c, isPileCard: true, isRevealed: true } : c,
       );
+      const newStack = reorderCategoryToFrontOfPile({ ...stack, cards: newCards });
       return {
         ...state,
         rows: state.rows.map((r, ri) =>
-          ri === rowIdx ? { ...r, [side]: { ...stack, cards: newCards } } : r,
+          ri === rowIdx ? { ...r, [side]: newStack } : r,
         ),
       };
     }
@@ -299,6 +328,10 @@ function applyMoveToStack(
     const tail = targetStack.cards.slice(1);
     newTargetCards = [placedMoving, anchor, ...tail];
   }
+  newTargetCards = reorderCategoryToFrontOfPile({
+    ...targetStack,
+    cards: newTargetCards,
+  }).cards;
 
   const newRows = state.rows.map((r, i) => {
     if (i === fromRowIdx && i === toRowIdx) {
