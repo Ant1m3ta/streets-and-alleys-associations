@@ -1,0 +1,91 @@
+{
+  "levelId": "level-2",
+  "movesLimit": -1,
+  "categories": [
+    {
+      "categoryId": "Colors",
+      "wordsData": [
+        { "wordId": "Red" },
+        { "wordId": "Blue" },
+        { "wordId": "Green" },
+        { "wordId": "Yellow" }
+      ]
+    },
+    {
+      "categoryId": "Fruits",
+      "wordsData": [
+        { "wordId": "Apple" },
+        { "wordId": "Banana" },
+        { "wordId": "Cherry" },
+        { "wordId": "Grape" }
+      ]
+    },
+    {
+      "categoryId": "Animals",
+      "wordsData": [
+        { "wordId": "Dog" },
+        { "wordId": "Cat" },
+        { "wordId": "Fish" },
+        { "wordId": "Bird" }
+      ]
+    },
+    {
+      "categoryId": "Vehicles",
+      "wordsData": [
+        { "wordId": "airplane", "icon": true, "imageId": "vehicles__airplane" },
+        { "wordId": "boat", "icon": true, "imageId": "vehicles__boat" },
+        { "wordId": "monster_truck", "icon": true, "imageId": "vehicles__monster_truck" },
+        { "wordId": "purple_scooter", "icon": true, "imageId": "vehicles__purple_scooter" },
+        { "wordId": "red_car", "icon": true, "imageId": "vehicles__red_car" },
+        { "wordId": "steam_train", "icon": true, "imageId": "vehicles__steam_train" }
+      ]
+    },
+    {
+      "categoryId": "Sweets",
+      "wordsData": [
+        { "wordId": "brownie", "icon": true, "imageId": "sweets__brownie" },
+        { "wordId": "candy_corn", "icon": true, "imageId": "sweets__candy_corn" },
+        { "wordId": "caramel", "icon": true, "imageId": "sweets__caramel" },
+        { "wordId": "chocolate_bar", "icon": true, "imageId": "sweets__chocolate_bar" },
+        { "wordId": "chocolate_cake", "icon": true, "imageId": "sweets__chocolate_cake" },
+        { "wordId": "fudge", "icon": true, "imageId": "sweets__fudge" }
+      ]
+    },
+    {
+      "categoryId": "Sports",
+      "wordsData": [
+        { "wordId": "Soccer" },
+        { "wordId": "Tennis" },
+        { "wordId": "Basketball" },
+        { "wordId": "Boxing" },
+        { "wordId": "Hockey" },
+        { "wordId": "Skiing" }
+      ]
+    },
+    {
+      "categoryId": "Weather",
+      "wordsData": [
+        { "wordId": "Sunny" },
+        { "wordId": "Rainy" },
+        { "wordId": "Snowy" },
+        { "wordId": "Cloudy" },
+        { "wordId": "Stormy" },
+        { "wordId": "Windy" }
+      ]
+    }
+  ],
+  "rows": [
+    {
+      "left": ["Red", "Colors", "Apple", "Soccer", "Sunny", "airplane", "brownie"],
+      "right": ["Fruits", "Blue", "Dog", "Tennis", "Rainy", "boat", "candy_corn"]
+    },
+    {
+      "left": ["Green", "Animals", "Banana", "Cat", "Basketball", "Snowy", "monster_truck"],
+      "right": ["Yellow", "Vehicles", "Cherry", "Fish", "Boxing", "Cloudy", "purple_scooter"]
+    },
+    {
+      "left": ["Sweets", "Sports", "Grape", "Bird", "Hockey", "Stormy", "red_car", "caramel"],
+      "right": ["Weather", "Windy", "Skiing", "steam_train", "chocolate_bar", "chocolate_cake", "fudge"]
+    }
+  ]
+}
