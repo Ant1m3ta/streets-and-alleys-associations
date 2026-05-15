@@ -42,6 +42,7 @@ export function applyAction(state: GameState, action: Action): GameState {
   switch (action.type) {
     case 'CYCLE_STACK':
       next = applyCycle(state, action.rowIdx, action.side);
+      next = autoMergeAdjacentSingle(next, action.rowIdx, action.side);
       break;
     case 'DROP_TO_FOUNDATION':
       next = applyDropToFoundation(
@@ -168,6 +169,39 @@ function applyShuffle(state: GameState): GameState {
   };
 }
 
+function autoMergeAdjacentSingle(
+  state: GameState,
+  rowIdx: number,
+  side: StackSide,
+): GameState {
+  const row = state.rows[rowIdx];
+  if (!row) return state;
+  const stack = row[side];
+  const cards = stack.cards;
+  for (let i = 0; i < cards.length; i++) {
+    if (cards[i].isPileCard) continue;
+    const cardCat = cards[i].category;
+    const above =
+      i > 0 && cards[i - 1].isPileCard && cards[i - 1].category === cardCat;
+    const below =
+      i < cards.length - 1 &&
+      cards[i + 1].isPileCard &&
+      cards[i + 1].category === cardCat;
+    if (above || below) {
+      const newCards = cards.map((c, idx) =>
+        idx === i ? { ...c, isPileCard: true, isRevealed: true } : c,
+      );
+      return {
+        ...state,
+        rows: state.rows.map((r, ri) =>
+          ri === rowIdx ? { ...r, [side]: { ...stack, cards: newCards } } : r,
+        ),
+      };
+    }
+  }
+  return state;
+}
+
 function applyCycle(state: GameState, rowIdx: number, side: StackSide): GameState {
   const row = state.rows[rowIdx];
   if (!row) throw new Error('Invalid row');
@@ -261,20 +295,9 @@ function applyMoveToStack(
   if (targetCount === 0) {
     newTargetCards = [placedMoving];
   } else {
-    const pileCategory = placedMoving.category;
-    const anchor: Card = { ...targetTop!, isRevealed: true };
+    const anchor: Card = { ...targetTop!, isRevealed: true, isPileCard: true };
     const tail = targetStack.cards.slice(1);
-    const processedTail: Card[] = [];
-    let stillInRun = true;
-    for (const c of tail) {
-      if (stillInRun && c.category === pileCategory) {
-        processedTail.push(c.isRevealed ? c : { ...c, isRevealed: true });
-      } else {
-        stillInRun = false;
-        processedTail.push(c);
-      }
-    }
-    newTargetCards = [placedMoving, anchor, ...processedTail];
+    newTargetCards = [placedMoving, anchor, ...tail];
   }
 
   const newRows = state.rows.map((r, i) => {
