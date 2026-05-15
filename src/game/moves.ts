@@ -9,6 +9,13 @@ import type {
 } from '../types';
 import { countSimpleInCategory, totalSimpleInLevel } from './cards';
 
+// How many cards to pull from the reserve into an empty stack (initial fill
+// and auto-refill).
+export const STACK_REFILL_SIZE = 4;
+// Hard cap on cards in a single row stack during gameplay. Moves that would
+// push a stack past this are rejected.
+export const MAX_STACK_SIZE = 8;
+
 export function isWon(state: GameState): boolean {
   return state.consumedSimple.length >= totalSimpleInLevel(state.level);
 }
@@ -81,7 +88,7 @@ function autoRefill(state: GameState): GameState {
     for (const side of ['left', 'right'] as const) {
       const stack = newRow[side];
       if (stack.cards.length === 0 && reserve.length > 0) {
-        const pullCount = Math.min(stack.cap, reserve.length);
+        const pullCount = Math.min(STACK_REFILL_SIZE, reserve.length);
         const refilled = reserve.slice(0, pullCount);
         reserve = reserve.slice(pullCount);
         newRow = {
@@ -286,6 +293,9 @@ function applyMoveToStack(
   const targetTop = targetStack.cards[0];
   if (targetTop && movingCard.category !== targetTop.category) {
     throw new Error('Categories do not match');
+  }
+  if (targetStack.cards.length >= MAX_STACK_SIZE) {
+    throw new Error('Stack is full');
   }
 
   const targetCount = targetStack.cards.length;

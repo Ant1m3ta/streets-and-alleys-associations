@@ -23,7 +23,6 @@ export type StackSide = 'left' | 'right';
 export interface Stack {
   cards: Card[];
   position: number;
-  cap: number;
 }
 
 export interface CategorySlot {
@@ -50,9 +49,6 @@ export interface GameState {
 export interface LevelData {
   levelId: string;
   movesLimit: number;
-  // Default cap for each row stack. Overridable per-stack via LevelRow.leftCap /
-  // rightCap. Falls back to 4 if omitted.
-  stackCapDefault?: number;
   categories: CategoryData[];
   // Each entry is one row. Card arrays are ordered with index 0 = top.
   rows: LevelRow[];
@@ -61,8 +57,6 @@ export interface LevelData {
 export interface LevelRow {
   left: string[];
   right: string[];
-  leftCap?: number;
-  rightCap?: number;
 }
 
 export interface CategoryData {
