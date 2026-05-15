@@ -113,12 +113,14 @@ function autoRefill(state: GameState): GameState {
 }
 
 const MIN_CARDS_PER_STACK_ON_SHUFFLE = 3;
+const MAX_CARDS_PER_STACK_ON_SHUFFLE = 5;
 
 function applyShuffle(state: GameState): GameState {
   const all: Card[] = [];
   for (const row of state.rows) {
     all.push(...row.left.cards, ...row.right.cards);
   }
+  all.push(...state.reserve);
   if (all.length < 2) {
     throw new Error('Nothing to shuffle');
   }
@@ -150,14 +152,18 @@ function applyShuffle(state: GameState): GameState {
 
   const sizes = new Array<number>(totalSlots).fill(0);
   if (all.length >= MIN_CARDS_PER_STACK_ON_SHUFFLE * participating) {
-    for (const slot of chosenSlots) {
-      sizes[slot] = MIN_CARDS_PER_STACK_ON_SHUFFLE;
-    }
-    let remaining = all.length - MIN_CARDS_PER_STACK_ON_SHUFFLE * participating;
-    while (remaining > 0) {
-      const slot = chosenSlots[Math.floor(Math.random() * chosenSlots.length)];
-      sizes[slot]++;
-      remaining--;
+    let cardsAvailable = all.length;
+    for (let i = 0; i < chosenSlots.length; i++) {
+      const slot = chosenSlots[i];
+      const slotsAfter = chosenSlots.length - i - 1;
+      const upperBound = Math.min(
+        MAX_CARDS_PER_STACK_ON_SHUFFLE,
+        cardsAvailable - slotsAfter * MIN_CARDS_PER_STACK_ON_SHUFFLE,
+      );
+      const range = upperBound - MIN_CARDS_PER_STACK_ON_SHUFFLE + 1;
+      const size = MIN_CARDS_PER_STACK_ON_SHUFFLE + Math.floor(Math.random() * range);
+      sizes[slot] = size;
+      cardsAvailable -= size;
     }
   } else {
     sizes[chosenSlots[0]] = all.length;
@@ -177,10 +183,12 @@ function applyShuffle(state: GameState): GameState {
       right: { ...row.right, cards: right, position: 0 },
     };
   });
+  const newReserve = all.slice(idx);
 
   return {
     ...state,
     rows: newRows,
+    reserve: newReserve,
     movesUsed: state.movesUsed + 1,
   };
 }
