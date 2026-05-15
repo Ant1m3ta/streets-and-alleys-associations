@@ -228,23 +228,19 @@ function applyMoveToStack(
   const targetCount = targetStack.cards.length;
   const wouldCreateNewPile = targetCount >= 1 && !targetTop?.isPileCard;
   if (wouldCreateNewPile) {
-    const sameSideHasPileBelow = targetStack.cards.some((c) => c.isPileCard);
     const oppositeSide: StackSide = toSide === 'left' ? 'right' : 'left';
-    const oppositeHasPile = targetRow[oppositeSide].cards.some(
-      (c) => c.isPileCard,
+    const existingPiles = [
+      ...targetStack.cards,
+      ...targetRow[oppositeSide].cards,
+    ].filter((c) => c.isPileCard);
+    const blockingPile = existingPiles.some(
+      (c) => c.category !== movingCard.category,
     );
-    if (sameSideHasPileBelow || oppositeHasPile) {
+    if (blockingPile) {
       throw new Error('Row already has a pile');
     }
   }
 
-  const targetBottom =
-    targetCount > 0 ? targetStack.cards[targetCount - 1] : null;
-  // Exchange the bottom card only when it's genuinely buried (>= 2 cards) and
-  // still unrevealed — i.e., when the player gains new information by
-  // surfacing it. A single-card target has nothing buried to expose.
-  const shouldExchange =
-    targetCount >= 2 && !!targetBottom && !targetBottom.isRevealed;
   const willCreatePile = targetCount >= 1;
 
   const placedMoving: Card = {
@@ -253,28 +249,15 @@ function applyMoveToStack(
     isPileCard: willCreatePile ? true : undefined,
   };
 
-  let newSourceCards: Card[];
-  if (shouldExchange) {
-    const jumped: Card = {
-      ...targetBottom!,
-      isPileCard: undefined,
-    };
-    newSourceCards = [...sourceStack.cards.slice(1), jumped];
-  } else {
-    newSourceCards = sourceStack.cards.slice(1);
-  }
+  const newSourceCards = sourceStack.cards.slice(1);
 
   let newTargetCards: Card[];
   if (targetCount === 0) {
     newTargetCards = [placedMoving];
   } else {
-    // Reveal the anchor and any consecutive same-category cards beneath it.
-    // Deeper buried cards of other categories stay in their existing state.
     const pileCategory = placedMoving.category;
     const anchor: Card = { ...targetTop!, isRevealed: true };
-    const tail = shouldExchange
-      ? targetStack.cards.slice(1, -1)
-      : targetStack.cards.slice(1);
+    const tail = targetStack.cards.slice(1);
     const processedTail: Card[] = [];
     let stillInRun = true;
     for (const c of tail) {
