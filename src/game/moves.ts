@@ -228,16 +228,13 @@ function applyMoveToStack(
   const targetCount = targetStack.cards.length;
   const wouldCreateNewPile = targetCount >= 1 && !targetTop?.isPileCard;
   if (wouldCreateNewPile) {
-    const oppositeSide: StackSide = toSide === 'left' ? 'right' : 'left';
-    const existingPiles = [
-      ...targetStack.cards,
-      ...targetRow[oppositeSide].cards,
-    ].filter((c) => c.isPileCard);
-    const blockingPile = existingPiles.some(
-      (c) => c.category !== movingCard.category,
+    const boardHasPile = state.rows.some(
+      (r) =>
+        r.left.cards.some((c) => c.isPileCard) ||
+        r.right.cards.some((c) => c.isPileCard),
     );
-    if (blockingPile) {
-      throw new Error('Row already has a pile');
+    if (boardHasPile) {
+      throw new Error('Board already has a pile');
     }
   }
 
