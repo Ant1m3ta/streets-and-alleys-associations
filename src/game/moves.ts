@@ -228,6 +228,10 @@ function applyMoveToStack(
   const targetCount = targetStack.cards.length;
   const wouldCreateNewPile = targetCount >= 1 && !targetTop?.isPileCard;
   if (wouldCreateNewPile) {
+    const targetHasPile = targetStack.cards.some((c) => c.isPileCard);
+    if (targetHasPile) {
+      throw new Error('Stack already has a pile');
+    }
     const pileCategory = movingCard.category;
     const boardHasSameCategoryPile = state.rows.some(
       (r) =>
