@@ -361,3 +361,8 @@ body {
   transform: rotate(2deg);
   box-shadow: 3px 8px 16px rgba(0, 0, 0, 0.5);
 }
+
+/* ============ Fly ghost (pile cascade) ============ */
+.fly-ghost .card {
+  box-shadow: 3px 8px 16px rgba(0, 0, 0, 0.5);
+}

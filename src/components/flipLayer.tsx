@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useFlyLayer } from './FlyLayer';
 
 const FLIP_DURATION_MS = 320;
 const FLIP_EASING = 'cubic-bezier(0.2, 0.7, 0.2, 1)';
@@ -33,9 +34,16 @@ function applyFlip(
   el.addEventListener('transitionend', onEnd);
 }
 
-export function FlipProvider({ children }: { children: ReactNode }) {
+export function FlipProvider({
+  children,
+  trigger,
+}: {
+  children: ReactNode;
+  trigger: unknown;
+}) {
   const prevRectsRef = useRef<Map<string, DOMRect>>(new Map());
   const prevReserveRectRef = useRef<DOMRect | null>(null);
+  const { getDealDelayMs } = useFlyLayer();
 
   useLayoutEffect(() => {
     const cards = document.querySelectorAll<HTMLElement>('[data-card-uid]');
@@ -66,10 +74,11 @@ export function FlipProvider({ children }: { children: ReactNode }) {
       (n, m) => n + (m.fromReserve ? 1 : 0),
       0,
     );
+    const dealOffset = getDealDelayMs();
     let reserveIdx = 0;
     for (const m of moves) {
       const delay = m.fromReserve
-        ? (reserveCount - 1 - reserveIdx++) * RESERVE_STAGGER_MS
+        ? dealOffset + (reserveCount - 1 - reserveIdx++) * RESERVE_STAGGER_MS
         : 0;
       applyFlip(m.el, m.dx, m.dy, delay);
     }
@@ -78,7 +87,7 @@ export function FlipProvider({ children }: { children: ReactNode }) {
       '[data-reserve-anchor] .card',
     );
     prevReserveRectRef.current = reserveEl?.getBoundingClientRect() ?? null;
-  });
+  }, [trigger]);
 
   return <>{children}</>;
 }

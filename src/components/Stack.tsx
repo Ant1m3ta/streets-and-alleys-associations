@@ -44,9 +44,14 @@ export function Stack({ stack, rowIdx, side, disabled, dispatch }: Props) {
   const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
     if (disabled || !top) return;
     e.preventDefault();
+    const pileCards = [];
+    for (const c of stack.cards) {
+      if (c.isPileCard) pileCards.push(c);
+      else break;
+    }
     startDrag(
       e,
-      { fromRowIdx: rowIdx, fromSide: side },
+      { fromRowIdx: rowIdx, fromSide: side, pileCards },
       <CardView card={top} />,
       () => dispatch({ type: 'CYCLE_STACK', rowIdx, side }),
       sourceKey,

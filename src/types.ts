@@ -79,6 +79,12 @@ export type Action =
       fromSide: StackSide;
     }
   | {
+      type: 'DROP_PILE_TO_FOUNDATION';
+      toRowIdx: number;
+      fromRowIdx: number;
+      fromSide: StackSide;
+    }
+  | {
       type: 'MOVE_TO_STACK';
       fromRowIdx: number;
       fromSide: StackSide;

@@ -60,6 +60,14 @@ export function applyAction(state: GameState, action: Action): GameState {
         action.toRowIdx,
       );
       break;
+    case 'DROP_PILE_TO_FOUNDATION':
+      next = applyDropPileToFoundation(
+        state,
+        action.fromRowIdx,
+        action.fromSide,
+        action.toRowIdx,
+      );
+      break;
     case 'MOVE_TO_STACK':
       next = applyMoveToStack(
         state,
@@ -399,14 +407,66 @@ function applyDropToFoundation(
     i === fromRowIdx ? newSourceRow : r,
   );
 
-  return placeCardInFoundation(
+  const placed = placeCardInFoundationSlot(
     { ...state, rows: rowsAfterPull },
     toRowIdx,
     card,
   );
+  return { ...placed, movesUsed: placed.movesUsed + 1 };
 }
 
-function placeCardInFoundation(
+function applyDropPileToFoundation(
+  state: GameState,
+  fromRowIdx: number,
+  fromSide: StackSide,
+  toRowIdx: number,
+): GameState {
+  const sourceRow = state.rows[fromRowIdx];
+  if (!sourceRow) throw new Error('Invalid source row');
+  const sourceStack = sourceRow[fromSide];
+  const pileLen = pileLengthFromTop(sourceStack);
+  if (pileLen === 0) throw new Error('Source stack has no pile');
+
+  const targetRow = state.rows[toRowIdx];
+  if (!targetRow) throw new Error('Invalid target row');
+
+  const pileCards = sourceStack.cards.slice(0, pileLen);
+  let simulatedSlot = targetRow.foundation;
+  for (const card of pileCards) {
+    if (!canPlaceInFoundation(card, simulatedSlot)) {
+      throw new Error('Pile cannot fully clear this foundation');
+    }
+    simulatedSlot =
+      simulatedSlot.lockedCategory === null
+        ? {
+            lockedCategory: card.category,
+            displayedCard: card,
+            cardsConsumed: 0,
+          }
+        : { ...simulatedSlot, displayedCard: card, cardsConsumed: simulatedSlot.cardsConsumed + 1 };
+  }
+
+  const newSourceRow: Row = {
+    ...sourceRow,
+    [fromSide]: { ...sourceStack, cards: sourceStack.cards.slice(pileLen), position: 0 },
+  };
+  let working: GameState = {
+    ...state,
+    rows: state.rows.map((r, i) => (i === fromRowIdx ? newSourceRow : r)),
+  };
+  for (const card of pileCards) {
+    working = placeCardInFoundationSlot(working, toRowIdx, card);
+  }
+  return { ...working, movesUsed: working.movesUsed + 1 };
+}
+
+function pileLengthFromTop(stack: Stack): number {
+  let n = 0;
+  while (n < stack.cards.length && stack.cards[n].isPileCard) n++;
+  return n;
+}
+
+function placeCardInFoundationSlot(
   state: GameState,
   rowIdx: number,
   card: Card,
@@ -465,6 +525,5 @@ function placeCardInFoundation(
     ...state,
     rows: newRows,
     consumedSimple: newConsumed,
-    movesUsed: state.movesUsed + 1,
   };
 }

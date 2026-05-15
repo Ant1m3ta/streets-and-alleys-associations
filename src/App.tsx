@@ -3,6 +3,7 @@ import { LEVELS } from './levels';
 import { makeInitialAppState, reduce } from './game/reducer';
 import { DragProvider } from './components/dragLayer';
 import { FlipProvider } from './components/flipLayer';
+import { FlyProvider, useFlyLayer } from './components/FlyLayer';
 import { Header } from './components/Header';
 import { Reserve } from './components/Reserve';
 import { Row } from './components/Row';
@@ -32,52 +33,79 @@ export function App() {
   }
 
   return (
-    <FlipProvider>
-    <DragProvider>
-      <div className="app">
-        <Header
-          movesUsed={appState.state.movesUsed}
-          movesLimit={appState.state.movesLimit}
-          canRollback={appState.history.length > 0}
-          canShuffle={!blocked}
-          levels={LEVELS}
-          currentLevelIdx={levelIdx}
-          onLevelChange={handleLevelChange}
-          dispatch={dispatch}
-        />
-        <div className="rows">
-          {appState.state.rows.map((row, idx) => (
-            <Row
-              key={idx}
-              row={row}
-              rowIdx={idx}
-              disabled={blocked}
-              level={appState.state.level}
+    <FlyProvider>
+      <FlipProvider trigger={appState}>
+        <DragProvider>
+          <div className="app">
+            <Header
+              movesUsed={appState.state.movesUsed}
+              movesLimit={appState.state.movesLimit}
+              canRollback={appState.history.length > 0}
+              canShuffle={!blocked}
+              levels={LEVELS}
+              currentLevelIdx={levelIdx}
+              onLevelChange={handleLevelChange}
               dispatch={dispatch}
             />
-          ))}
-        </div>
-        <Reserve count={appState.state.reserve.length} />
-
-        {appState.outcome === 'won' && (
-          <Overlay
-            title="You won!"
-            subtitle={`Cleared in ${appState.state.movesUsed} moves`}
-            primaryLabel="Next level"
-            onPrimary={handleNext}
-            secondaryLabel="Play again"
-            onSecondary={handleRestart}
-          />
-        )}
-        {appState.outcome === 'lost' && (
-          <Overlay
-            title="Out of moves"
-            primaryLabel="Restart"
-            onPrimary={handleRestart}
-          />
-        )}
-      </div>
-    </DragProvider>
-    </FlipProvider>
+            <div className="rows">
+              {appState.state.rows.map((row, idx) => (
+                <Row
+                  key={idx}
+                  row={row}
+                  rowIdx={idx}
+                  disabled={blocked}
+                  level={appState.state.level}
+                  dispatch={dispatch}
+                />
+              ))}
+            </div>
+            <Reserve count={appState.state.reserve.length} />
+            <OverlayGate
+              outcome={appState.outcome}
+              movesUsed={appState.state.movesUsed}
+              onNext={handleNext}
+              onRestart={handleRestart}
+            />
+          </div>
+        </DragProvider>
+      </FlipProvider>
+    </FlyProvider>
   );
+}
+
+function OverlayGate({
+  outcome,
+  movesUsed,
+  onNext,
+  onRestart,
+}: {
+  outcome: 'playing' | 'won' | 'lost';
+  movesUsed: number;
+  onNext: () => void;
+  onRestart: () => void;
+}) {
+  const { hasActiveAnimations } = useFlyLayer();
+  if (hasActiveAnimations) return null;
+  if (outcome === 'won') {
+    return (
+      <Overlay
+        title="You won!"
+        subtitle={`Cleared in ${movesUsed} moves`}
+        primaryLabel="Next level"
+        onPrimary={onNext}
+        secondaryLabel="Play again"
+        onSecondary={onRestart}
+      />
+    );
+  }
+  if (outcome === 'lost') {
+    return (
+      <Overlay
+        title="Out of moves"
+        primaryLabel="Restart"
+        onPrimary={onRestart}
+      />
+    );
+  }
+  return null;
 }
