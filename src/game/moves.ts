@@ -14,7 +14,7 @@ import { countSimpleInCategory, totalSimpleInLevel } from './cards';
 export const STACK_REFILL_SIZE = 4;
 // Hard cap on cards in a single row stack during gameplay. Moves that would
 // push a stack past this are rejected.
-export const MAX_STACK_SIZE = 8;
+export const MAX_STACK_SIZE = 9;
 
 export function isWon(state: GameState): boolean {
   return state.consumedSimple.length >= totalSimpleInLevel(state.level);
